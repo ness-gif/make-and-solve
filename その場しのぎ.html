@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>その場しのぎ</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    cursor: default;
+    user-select: none;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 2rem;
+    background-color: #fff;
+    .question {
+        width: auto;
+        height: auto;
+    }
+    .answer {
+        padding-top: 4px;
+        min-width: 200px;
+        max-width: calc(100vw - 100px);
+        min-height: 2rem;
+        border: solid 1px black;
+        border-radius: 5px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+    }
+}
+</style>
+</head>
+<body>
+    <div class="question"></div>
+    <div class="answer" contenteditable="true"></div>
+<script>
+const question_html = document.querySelector('.question');
+const answer_html = document.querySelector('.answer');
+const questions_default = [
+    {question: '地球上の生物は、どれくらいの数の種が確認されているか。', answer: '190万種'},
+    {question: 'すべての生物は、共通の祖先をもつため、基本的な特徴を共通にもつ。この性質。', answer: '共通性'},
+    {question: '1㎛は何mmか。', answer: '0.001mm'},
+    {question: '核をもつ細胞を何と呼ぶか。', answer: '真核細胞'},
+    {question: '真核細胞で構成される生物を何と呼ぶか。', answer: '真核生物'},
+    {question: '核をもたない細胞を何と呼ぶか。', answer: '原核細胞'},
+    {question: '原核細胞で構成される生物を何と呼ぶか。', answer: '原核生物'},
+    {question: '原核生物を具体的に２つあげよ。', answer: '大腸菌・シアノバクテリア'},
+    {question: '細胞や個体の形質を決めたり、その形質を子孫に伝えるはたらきをもつ遺伝物質は何か。', answer: 'DNA'},
+    {question: '植物細胞に発達し、物質の貯蔵に関係する細胞小器官は何か。', answer: '液胞'},
+    {question: '光合成を行う細胞小器官は何か。', answer: '葉緑体'},
+    {question: '動物細胞にみられず、植物細胞のみにみられる細胞の形の維持にはたらく構造は何か。', answer: '細胞壁'},
+    {question: '細胞を外界と隔てる幕は何か。', answer: '細胞膜'},
+    {question: '細胞小器官の間を満たしている液状部分を何というか。', answer: '細胞質基質'},
+    {question: '一般的に、真核細胞に比べて原核細胞の大きさにはどのような違いがあるか。', answer: '小さい'},
+    {question: '物質の分泌に関係する細胞小器官は何か。', answer: 'ゴルジ体'},
+    {question: '動物細胞の細胞分裂の際に、紡錘糸の起点となる細胞小器官は何か。', answer: '中心体'},
+    {question: '活動に必要なエネルギーを得るため細胞では何が行われるか。', answer: '異化'},
+    {question: '異化でエネルギーは、どのような物質に蓄えられるか。', answer: 'ATP'},
+    {question: 'ATPが分解されるとエネルギーを放出してどのような物質に分解されるか。2つ答えよ。', answer: 'ADPとリン酸'},
+    {question: 'ATPは生体内でエネルギーの受け渡しをに伴う反応に関係することから何と呼ばれるか。', answer: 'エネルギーの通貨'},
+    {question: '生体内における化学反応をまとめて何というか。', answer: '代謝'},
+    {question: '化学反応を促進し、自身は反応の前後で変化しない物質を一般的に何というか。', answer: '触媒'},
+    {question: '触媒のうち、過酸化水素を分解する物質をあげよ。', answer: '酸化マンガン'},
+    {question: '生体内で合成される触媒を何というか。', answer: '酵素'},
+    {question: '酵素のうち、過酸化水素を分解する物質をあげよ。', answer: 'カタラーゼ'},
+    {question: '酵素の合成時、どの細胞小器官で翻訳されるか。', answer: 'リボソーム'},
+    {question: '細胞外ではたらく酵素にはどのようなものがあるか。', answer: 'ペプシン　アミラーゼなど'},
+    {question: '呼吸に関する酵素がはたらく細胞小器官は何か。', answer: 'ミトコンドリア'},
+    {question: 'DNAなどの合成に関係する酵素は、細胞のどこにあるか。', answer: '核内'},
+    {question: '光合成に関係する酵素は、どこにあるか。', answer: '葉緑体'},
+    {question: '酵素がはたらきかける物質を何というか。', answer: '基質'},
+    {question: '酵素が特定の物質にのみはたらきかける性質を何というか。', answer: '基質特異性'},
+    {question: '酵素の基質と結合する部分を何というか。', answer: '活性部位'},
+    {question: '酵素による反応で最も反応が速くなる温度を何というか。', answer: '最適温度'},
+    {question: '酵素による反応で反応速度が最も速くなるpHを何というか。', answer: '最適pH'},
+    {question: '二酸化炭素から有機物をつくる反応を何というか。', answer: '炭酸同化'},
+    {question: '光エネルギーを用いた炭酸同化を何というか。', answer: '光合成'},
+    {question: '光合成の結果つくられた有機物は、一時的に葉緑体内にどのような物質として蓄えられるか。', answer: 'デンプン'},
+    {question: 'デンプンを分解する酵素を答えよ。', answer: 'アミラーゼ'},
+    {question: 'デンプンは水に溶けるスクロースとなって、どこを通って他の部位に輸送されるか。', answer: '師管'},
+    {question: '真核生物で光合成の行われる場所はどこか。', answer: '葉緑体'},
+    {question: '原核生物のシアノバクテリア類は、葉緑体をもつかもたないか。', answer: 'もたない'},
+    {question: '光合成の反応の材料を3つあげよ。', answer: 'CO2　H2O　光エネルギー'},
+    {question: '光合成の反応の生成物を2つあげよ。', answer: 'グルコース　酸素'},
+    {question: '光合成のATP生産のエネルギー源は何か', answer: '光エネルギー'},
+    {question: '暗黒化で植物が行う反応は何か', answer: '呼吸'},
+    {question: '葉緑体内部の扁平状の構造を何というか', answer: 'チラコイド'},
+    {question: 'チラコイドが積み重なった部分を何というか', answer: 'グラナ'},
+    {question: '葉緑体を包む膜はどのような構造をとっているか', answer: '2重膜'},
+    {question: '内膜の内側でチラコイドを囲む部分を何というか', answer: 'ストロマ'},
+    {question: 'チラコイドにはどのような色素が含まれるか', answer: 'クロロフィル'},
+    {question: 'グルコースの分子式を答えよ', answer: 'C₆H₁₂O₆'},
+    {question: '酸素を用いて有機物を水と二酸化炭素まで分解する反応を何というか', answer: '呼吸'},
+    {question: '真核細胞の呼吸で、酸素を用いた反応はおもにどこで行われるか', answer: 'ミトコンドリア'},
+    {question: '呼吸で放出されたエネルギーは、どこに蓄えられるか', answer: 'ATP'},
+    {question: '呼吸の反応の材料を答えよ', answer: 'グルコース　O₂'},
+    {question: '呼吸の反応生成物を答えよ', answer: 'CO₂　H₂O'},
+    {question: '呼吸でATP生産のエネルギー源となっているのは元をたどれば何のエネルギーか', answer: '太陽のエネルギー'},
+    {question: '呼吸の反応により、グルコース1分子から、最大で何分子のATPが作られるか', answer: '38分子'},
+    {question: 'ミトコンドリアを包む膜はどのような構造にとっているか', answer: '2重膜'},
+    {question: 'ミトコンドリアのひだ状に伸びた内膜を何と呼ぶか', answer: 'クリステ'},
+    {question: 'ミトコンドリアの最も内側の空間を何と呼ぶか', answer: 'マトリックス'},
+    {question: '呼吸の反応のうち、酸素を用いない最初の反応はどこで行われるか', answer: '細胞質基質'},
+    {question: '呼吸の反応のうち、酸素を用いる反応はどこで行われるか', answer: 'ミトコンドリア'},
+    {question: '酵母菌は酸素存在環境下では呼吸を行うが、酸素の存在しない環境下では、何を行うか', answer: 'アルコール発酵'},
+    {question: '動物が取り入れる有機物は、もとをたどれば何に由来するか', answer: '植物が合成した有機物'},
+    {question: '葉緑体とミトコンドリアの共通点を2つ述べよ', answer: '2重膜　独自のDNA'},
+    {question: '真核細胞では呼吸を行う最近が細胞内に共生し、(    )の起源になった', answer: 'ミトコンドリア'},
+    {question: '真核細胞では、シアノバクテリアが細胞内に共生し、(    )の起源になった', answer: '葉緑体'},
+    {question: '真核細胞の起源について、細胞内で共生する考え方を何というか', answer: '(細胞内)共生説'},
+    {question: '酸素を使って有機物を分解する反応を何というか', answer: '呼吸'},
+    {question: '肺で取り入れた酸素は、細胞内のどこへ運ばれるか', answer: 'ミトコンドリア'},
+    {question: '原核生物がの生物が持つ細胞小器官を答えよ', answer: 'リボソーム'},
+    {question: '酵母菌は真核細胞か原核細胞か', answer: '真核細胞'},
+    {question: '「すべての生物は細胞からなる」という考え方を何というか', answer: '細胞説'},
+    {question: 'コルクの切片を自作の顕微鏡で観察して初めて細胞を観察した人物は誰か', answer: 'フック'},
+    {question: 'すべての植物の体は細胞からできているという植物の細胞説を提唱したのは誰か', answer: 'シュライデン'},
+    {question: '葉緑体やミトコンドリア、ゴルジ体などがもつ生体膜の主成分は何か、2つ答えよ', answer: 'リン脂質とタンパク質'},
+    {question: '細胞膜の主成分は何か、2つ答えよ', answer: 'リン脂質とタンパク質'}
+];
+
+var question = JSON.parse(JSON.stringify(questions_default));
+var the_answer = '';
+
+function ask() {
+    let r = Math.floor(Math.random() * question.length);
+    let pair = question.splice(r, 1)[0];
+    if (question.length == 0) {
+        question = JSON.parse(JSON.stringify(questions_default));
+    }
+    question_html.innerHTML = pair.question;
+    the_answer = pair.answer;
+}
+
+function answer() {
+    let submission = answer_html.innerHTML;
+    if (submission == the_answer) {
+        document.body.style.backgroundColor = '#fdd';
+    } else {
+        document.body.style.backgroundColor = '#ddf';
+        setTimeout(() => {alert('不正解\n' + the_answer)}, 1);
+    }
+    answer_html.innerHTML = '';
+}
+
+document.addEventListener('keydown', (event) => {
+    if (event.key == 'Enter') {
+        event.preventDefault();
+        answer();
+        setTimeout(() => {ask()}, 5);
+    }
+});
+
+window.onload = () => {
+    ask();
+    answer_html.focus();
+};
+</script>
+</body>
+</html>
