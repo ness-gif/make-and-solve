@@ -416,6 +416,9 @@ function start(text) {
     false_sign_html = document.querySelectorAll('.false_sign');
     correct_answer_html = document.querySelectorAll('.correct_answer');
     select_html.classList.add('hidden');
+    setTimeout(() => {
+        select_html.style.display = 'none';
+    }, 500);
     ask();
 }
 
@@ -476,6 +479,9 @@ function next() {
 
 function end() {
     status = 'choice';
+    setTimeout(() => {
+        select_html.style.display = 'grid';
+    }, 500);
     select_html.classList.remove('hidden');
 }
 
