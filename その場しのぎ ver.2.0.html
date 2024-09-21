@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>その場しのぎ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap');
+
+.noto-sans-jp {
+    font-family: "Noto Sans JP", 'メイリオ', 'ヒラギノ角ゴ Pro W3', 'ＭＳ Ｐゴシック', sans-serif, system-ui;
+    font-optical-sizing: auto;
+    font-weight: weight;
+    font-style: normal;
+}
+
+* {
+    font-family: "Noto Sans JP", system-ui;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    margin: 0;
+    padding: 0;
+    cursor: default;
+    user-select: none;
+}
+
+:root {
+    overflow: hidden;
+}
+
+body {
+    overflow: hidden;
+    height: 100vh;
+    display: grid;
+    place-items: center;
+    align-content: start;
+    gap: 2rem;
+    background-color: #fff;
+    .select {
+        opacity: 1;
+        transition-property: opacity;
+        transition-duration: .5s;
+        transition-timing-function: ease;
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: grid;
+        justify-content: center;
+        align-content: space-evenly;
+        background-color: white;
+        .option {
+            font-size: 1.5rem;
+            padding-inline: 1rem;
+            padding-bottom: 4px;
+            border-radius: .5rem;
+            background-color: #006eff;
+            color: white;
+            font-weight: 600;
+        }
+        .option:hover {
+            color: white;
+            background-color: #107eff;
+        }
+        .option:active {
+            background-color: #005eef;
+        }
+    }
+    .select.hidden {
+        transition-property: opacity;
+        transition-duration: .5s;
+        transition-timing-function: ease;
+        opacity: 0;
+    }
+    .answering_area {
+        background: linear-gradient(to bottom, #0ff, #006);
+        width: calc(100vw - 3rem);
+        padding-inline: 1.5rem;
+        height: auto;
+        translate: 0 0;
+        .set {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: grid;
+            place-items: center;
+            align-content: center;
+            .question {
+                width: auto;
+                height: auto;
+                color: white;
+                font-size: 1.35rem;
+                font-weight: 600;
+                z-index: 1;
+            }
+            .answer {
+                font-family: "Noto Sans JP", 'メイリオ', 'ヒラギノ角ゴ Pro W3', 'ＭＳ Ｐゴシック', sans-serif, system-ui;
+                padding-bottom: 2px;
+                margin-top: 2.5rem;
+                min-width: 200px;
+                max-width: calc(100vw - 100px);
+                min-height: 2rem;
+                background-color: white;
+                border: solid 2px black;
+                border-radius: 5px;
+                display: grid;
+                place-items: center;
+                text-align: center;
+                z-index: 1;
+            }
+            .circle {
+                opacity: 0;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                translate: -50% -50%;
+                height: 30vh;
+                width: 30vh;
+                border-radius: 100vh;
+                border: solid 5vh red;
+            }
+            .circle.visible {
+                transition-property: opacity;
+                transition-duration: .25s;
+                transition-timing-function: ease-in-out;
+                opacity: 1;
+            }
+            .false_sign {
+                opacity: 0;
+                .line1 {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    translate: -50% -50%;
+                    width: 50vh;
+                    height: 5vh;
+                    background-color: blue;
+                    rotate: 45deg;
+                }
+                .line2 {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    translate: -50% -50%;
+                    width: 50vh;
+                    height: 5vh;
+                    background-color: blue;
+                    rotate: 135deg;
+                }
+            }
+            .false_sign.visible {
+                transition-property: opacity;
+                transition-duration: .25s;
+                transition-timing-function: ease-in-out;
+                opacity: 1;
+            }
+            .correct_answer {
+                opacity: 0;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                translate: -50% -50%;
+                width: min(90vw, 200px);
+                height: auto;
+                padding-bottom: .2rem;
+                padding-inline: 1rem;
+                border-radius: .5rem;
+                border: solid 2px black;
+                background-color: white;
+                color: red;
+                font-size: 1.5rem;
+                font-weight: 600;
+                text-align: center;
+                z-index: 1;
+            }
+            .correct_answer.visible {
+                transition-property: opacity;
+                transition-duration: .25s;
+                transition-timing-function: ease-in-out;
+                opacity: 1;
+            }
+        }
+    }
+    .answering_area.scroll {
+        transition-property: translate;
+        transition-duration: .5s;
+        translate: 0 -100vh;
+        transition-timing-function: ease-in-out;
+    }
+}
+</style>
+</head>
+<body>
+    <div class="select">
+        <div class="option" onclick="start('biology_check_1')">生物 小テスト 第一回</div>
+        <div class="option" onclick="start('biology_check_2')">生物 小テスト 第二回</div>
+    </div>
+    <div class="answering_area"></div>
+    <!-- <div class="question"></div>
+    <div class="answer" contenteditable="true"></div>
+    <div class="circle"></div>
+    <div class="false_sign">
+        <div class="line1"></div>
+        <div class="line2"></div>
+    </div>
+    <div class="correct_answer"></div> -->
+<script>
+const select_html = document.querySelector('.select');
+var question_html;
+var answer_html;
+var circle_html;
+var false_sign_html;
+var correct_answer_html;
+var status = 'choice';
+const answering_area = document.querySelector('.answering_area');
+const questions_default = {
+    'biology_check_1': [
+        {question: '地球上の生物は、どれくらいの数の種が確認されているか。', answer: '190万種'},
+        {question: 'すべての生物は、共通の祖先をもつため、基本的な特徴を共通にもつ。この性質。', answer: '共通性'},
+        {question: '1㎛は何mmか。', answer: '0.001mm'},
+        {question: '核をもつ細胞を何と呼ぶか。', answer: '真核細胞'},
+        {question: '真核細胞で構成される生物を何と呼ぶか。', answer: '真核生物'},
+        {question: '核をもたない細胞を何と呼ぶか。', answer: '原核細胞'},
+        {question: '原核細胞で構成される生物を何と呼ぶか。', answer: '原核生物'},
+        {question: '原核生物を具体的に２つあげよ。', answer: '大腸菌・シアノバクテリア'},
+        {question: '細胞や個体の形質を決めたり、その形質を子孫に伝えるはたらきをもつ遺伝物質は何か。', answer: 'DNA'},
+        {question: '植物細胞に発達し、物質の貯蔵に関係する細胞小器官は何か。', answer: '液胞'},
+        {question: '光合成を行う細胞小器官は何か。', answer: '葉緑体'},
+        {question: '動物細胞にみられず、植物細胞のみにみられる細胞の形の維持にはたらく構造は何か。', answer: '細胞壁'},
+        {question: '細胞を外界と隔てる膜は何か。', answer: '細胞膜'},
+        {question: '細胞小器官の間を満たしている液状部分を何というか。', answer: '細胞質基質'},
+        {question: '一般的に、真核細胞に比べて原核細胞の大きさにはどのような違いがあるか。', answer: '小さい'},
+        {question: '物質の分泌に関係する細胞小器官は何か。', answer: 'ゴルジ体'},
+        {question: '動物細胞の細胞分裂の際に、紡錘糸の起点となる細胞小器官は何か。', answer: '中心体'},
+        {question: '活動に必要なエネルギーを得るため細胞では何が行われるか。', answer: '異化'},
+        {question: '異化でエネルギーは、どのような物質に蓄えられるか。', answer: 'ATP'},
+        {question: 'ATPが分解されるとエネルギーを放出してどのような物質に分解されるか。2つ答えよ。', answer: 'ADPとリン酸'},
+        {question: 'ATPは生体内でエネルギーの受け渡しをに伴う反応に関係することから何と呼ばれるか。', answer: 'エネルギーの通貨'},
+        {question: '生体内における化学反応をまとめて何というか。', answer: '代謝'},
+        {question: '化学反応を促進し、自身は反応の前後で変化しない物質を一般的に何というか。', answer: '触媒'},
+        {question: '触媒のうち、過酸化水素を分解する物質をあげよ。', answer: '酸化マンガン'},
+        {question: '生体内で合成される触媒を何というか。', answer: '酵素'},
+        {question: '酵素のうち、過酸化水素を分解する物質をあげよ。', answer: 'カタラーゼ'},
+        {question: '酵素の合成時、どの細胞小器官で翻訳されるか。', answer: 'リボソーム'},
+        {question: '細胞外ではたらく酵素にはどのようなものがあるか。', answer: 'ペプシン　アミラーゼなど'},
+        {question: '呼吸に関する酵素がはたらく細胞小器官は何か。', answer: 'ミトコンドリア'},
+        {question: 'DNAなどの合成に関係する酵素は、細胞のどこにあるか。', answer: '核内'},
+        {question: '光合成に関係する酵素は、どこにあるか。', answer: '葉緑体'},
+        {question: '酵素がはたらきかける物質を何というか。', answer: '基質'},
+        {question: '酵素が特定の物質にのみはたらきかける性質を何というか。', answer: '基質特異性'},
+        {question: '酵素の基質と結合する部分を何というか。', answer: '活性部位'},
+        {question: '酵素による反応で最も反応が速くなる温度を何というか。', answer: '最適温度'},
+        {question: '酵素による反応で反応速度が最も速くなるpHを何というか。', answer: '最適pH'},
+        {question: '二酸化炭素から有機物をつくる反応を何というか。', answer: '炭酸同化'},
+        {question: '光エネルギーを用いた炭酸同化を何というか。', answer: '光合成'},
+        {question: '光合成の結果つくられた有機物は、一時的に葉緑体内にどのような物質として蓄えられるか。', answer: 'デンプン'},
+        {question: 'デンプンを分解する酵素を答えよ。', answer: 'アミラーゼ'},
+        {question: 'デンプンは水に溶けるスクロースとなって、どこを通って他の部位に輸送されるか。', answer: '師管'},
+        {question: '真核生物で光合成の行われる場所はどこか。', answer: '葉緑体'},
+        {question: '原核生物のシアノバクテリア類は、葉緑体をもつかもたないか。', answer: 'もたない'},
+        {question: '光合成の反応の材料を3つあげよ。', answer: 'CO2　H2O　光エネルギー'},
+        {question: '光合成の反応の生成物を2つあげよ。', answer: 'グルコース　酸素'},
+        {question: '光合成のATP生産のエネルギー源は何か', answer: '光エネルギー'},
+        {question: '暗黒化で植物が行う反応は何か', answer: '呼吸'},
+        {question: '葉緑体内部の扁平状の構造を何というか', answer: 'チラコイド'},
+        {question: 'チラコイドが積み重なった部分を何というか', answer: 'グラナ'},
+        {question: '葉緑体を包む膜はどのような構造をとっているか', answer: '2重膜'},
+        {question: '内膜の内側でチラコイドを囲む部分を何というか', answer: 'ストロマ'},
+        {question: 'チラコイドにはどのような色素が含まれるか', answer: 'クロロフィル'},
+        {question: 'グルコースの分子式を答えよ', answer: 'C6H12O6'},
+        {question: '酸素を用いて有機物を水と二酸化炭素まで分解する反応を何というか', answer: '呼吸'},
+        {question: '真核細胞の呼吸で、酸素を用いた反応はおもにどこで行われるか', answer: 'ミトコンドリア'},
+        {question: '呼吸で放出されたエネルギーは、どこに蓄えられるか', answer: 'ATP'},
+        {question: '呼吸の反応の材料を答えよ', answer: 'グルコース　O2'},
+        {question: '呼吸の反応生成物を答えよ', answer: 'CO2　H2O'},
+        {question: '呼吸でATP生産のエネルギー源となっているのは元をたどれば何のエネルギーか', answer: '太陽のエネルギー'},
+        {question: '呼吸の反応により、グルコース1分子から、最大で何分子のATPが作られるか', answer: '38分子'},
+        {question: 'ミトコンドリアを包む膜はどのような構造にとっているか', answer: '2重膜'},
+        {question: 'ミトコンドリアのひだ状に伸びた内膜を何と呼ぶか', answer: 'クリステ'},
+        {question: 'ミトコンドリアの最も内側の空間を何と呼ぶか', answer: 'マトリックス'},
+        {question: '呼吸の反応のうち、酸素を用いない最初の反応はどこで行われるか', answer: '細胞質基質'},
+        {question: '呼吸の反応のうち、酸素を用いる反応はどこで行われるか', answer: 'ミトコンドリア'},
+        {question: '酵母菌は酸素存在環境下では呼吸を行うが、酸素の存在しない環境下では、何を行うか', answer: 'アルコール発酵'},
+        {question: '動物が取り入れる有機物は、もとをたどれば何に由来するか', answer: '植物が合成した有機物'},
+        {question: '葉緑体とミトコンドリアの共通点を2つ述べよ', answer: '2重膜　独自のDNA'},
+        {question: '真核細胞では呼吸を行う最近が細胞内に共生し、(    )の起源になった', answer: 'ミトコンドリア'},
+        {question: '真核細胞では、シアノバクテリアが細胞内に共生し、(    )の起源になった', answer: '葉緑体'},
+        {question: '真核細胞の起源について、細胞内で共生する考え方を何というか', answer: '(細胞内)共生説'},
+        {question: '酸素を使って有機物を分解する反応を何というか', answer: '呼吸'},
+        {question: '肺で取り入れた酸素は、細胞内のどこへ運ばれるか', answer: 'ミトコンドリア'},
+        {question: '原核生物がの生物が持つ細胞小器官を答えよ', answer: 'リボソーム'},
+        {question: '酵母菌は真核細胞か原核細胞か', answer: '真核細胞'},
+        {question: '「すべての生物は細胞からなる」という考え方を何というか', answer: '細胞説'},
+        {question: 'コルクの切片を自作の顕微鏡で観察して初めて細胞を観察した人物は誰か', answer: 'フック'},
+        {question: 'すべての植物の体は細胞からできているという植物の細胞説を提唱したのは誰か', answer: 'シュライデン'},
+        {question: '葉緑体やミトコンドリア、ゴルジ体などがもつ生体膜の主成分は何か、2つ答えよ', answer: 'リン脂質とタンパク質'},
+        {question: '細胞膜の主成分は何か、2つ答えよ', answer: 'リン脂質とタンパク質'}
+    ],
+    'biology_check_2': [
+        {question: 'DNAはどのような構造になっているか。', answer: '2重らせん構造'},
+        {question: 'DNAの構成単位を何というか。', answer: 'ヌクレオチド'},
+        {question: 'ヌクレオチドを構成する3つの部分を答えよ。', answer: '塩基　糖　リン酸'},
+        {question: 'DNAを構成する五炭糖は何か。', answer: 'デオキシリボース'},
+        {question: 'DNAの塩基を4種類あげよ。', answer: 'アデニン、チミン、グアニン、シトシン'},
+        {question: '塩基の並び方を何というか。', answer: '塩基配列'},
+        {question: 'DNAの塩基の割合が、AとT、GとCが同じ割合で含まれていることを示した人はだれか。', answer: 'シャルガフ'},
+        {question: '特定の塩基どうしが対をつくりやすい性質を何というか。', answer: '相補性'},
+        {question: '塩基どうしの対を何というか。', answer: '塩基対'},
+        {question: 'Aと対をなす塩基は何か。', answer: 'T'},
+        {question: 'Gと対をなす塩基は何か。', answer: 'C'},
+        {question: '体細胞で、同じ大きさと形で対になっている染色体を何というか。', answer: '相同染色体'},
+        {question: '相同染色体で片方の組のDNAに含まれるすべての遺伝情報を何というか。（生物が正常な生命活動を営むために必要な、最小限の染色体の一組）', answer: 'ゲノム'},
+        {question: 'ヒトのゲノムに含まれるヌクレオチドの塩基対の数は、約何塩基対（bp: base pairs）か。', answer: '30億bp'},
+        {question: 'ゲノムに含まれる塩基対の数を何というか。', answer: 'ゲノムサイズ'},
+        {question: 'ヒトのゲノムには、約何種の遺伝子が含まれるか。', answer: '約2万種'},
+        {question: 'エンドウの遺伝現象から遺伝の法則性を発見し、概念としての遺伝子の存在を示した人はだれか。', answer: 'メンデル'},
+        {question: '患者の膿（好中球の死骸）から核酸を発見したのはだれか。', answer: 'ミーシャー'},
+        {question: 'ショウジョウバエの研究から遺伝子が染色体上にあることを明らかにしたのは誰か。', answer: 'モーガン'},
+        {question: '肺炎双球菌の実験から、遺伝子の本体はDNAであると提唱した人物はだれか。2人あげよ。', answer: 'グリフィス、エイブリー'},
+        {question: 'R型菌が、S型菌抽出液から影響を受けて、S型菌へと変化する現象を何というか。', answer: '形質転換'},
+        {question: '大腸菌に感染するバクテリオファージの実験から遺伝子の本体がDNAであることを証明したのはだれか。2人あげよ。', answer: 'ハーシー、チェイス'},
+        {question: 'X線を使って、DNAがらせん構造をもつことを示す写真を撮ることに成功したのはだれか。2人あげよ。', answer: 'ウィルキンス、フランクリン'},
+        {question: '1953年に、DNAの二重らせん構造のモデルを提案したのはだれか。2人あげよ。', answer: 'ワトソン、クリック'},
+        {question: '原核細胞のDNAは、核膜に包まれて（）。', answer: 'いない'},
+        {question: '原核細胞のゲノムは（）本の環状DNAからなる。', answer: '1本'},
+        {question: '真核細胞のDNAは細胞分裂のときにどのように観察されるか。', answer: '凝縮されて太い'},
+        {question: '染色体が太い糸状に観察できるようになるのは、体細胞分裂の何期か。', answer: '前期'},
+        {question: '染色体が細胞の赤道面に並ぶのは、体細胞分裂の何期か。', answer: '中期'},
+        {question: '各染色体が縦に裂けるように2つに分かれ両極に移動するのは、体細胞分裂の何期か。', answer: '後期'},
+        {question: '染色体の形がしだいに崩れ、やがて核膜が形成されてくるのは、体細胞分裂の何期か。', answer: '終期'},
+        {question: '体細胞分裂の観察で、染色体の染色液にはどのようなものがあるか。', answer: '酢酸オルセイン'},
+        {question: '酸性物質であるDNAが凝縮する際に巻き付く、塩基性タンパク質は何か。', answer: 'ヒストン'},
+        {question: '体細胞分裂が終了してから、再び次の分裂が終了するまでの過程を何というか。', answer: '細胞周期'},
+        {question: '核が分裂する時期を何というか。', answer: '分裂期'},
+        {question: '分裂期以外の時期を何というか。', answer: '間期'},
+        {question: '間期のうち、DNAの合成が行われるのは何期か。', answer: 'DNA合成期'},
+        {question: '間期のうち、DNA合成機の直前の時期は何期か。', answer: 'G1期'},
+        {question: 'DNAの複製は片方の鎖を鋳型として、相補的なヌクレオチドが結合していくことによって行われる。この複製方法を何と呼ぶか。', answer: '半保存的複製'},
+        {question: '遺伝子の情報により、何という物質が合成されるか。', answer: 'タンパク質'},
+        {question: 'タンパク質は、何が並んでできているか。', answer: 'アミノ酸'},
+        {question: '遺伝子が実際にはたらくことを何というか。', answer: '発現する'},
+        {question: 'DNAの塩基配列は、何という分子の塩基配列に写し取られるか。', answer: 'mRNA'},
+        {question: 'mRNAが写し取られる過程を何と呼ぶか。', answer: '転写'},
+        {question: 'mRNAの塩基配列がアミノ酸配列に変換される過程を何と呼ぶか。', answer: '翻訳'},
+        {question: 'DNA → RNA → タンパク質の一方向の遺伝情報の流れを何というか。', answer: 'セントラルドグマ'},
+        {question: 'DNAとRNAをまとめて何と呼ぶか。', answer: '核酸'},
+        {question: 'RNAの構成単位を何というか。', answer: 'ヌクレオチド'},
+        {question: 'RNAを構成する五炭糖は何か。', answer: 'リボース'},
+        {question: 'RNAを構成する塩基を4つあげよ。', answer: 'アデニン、ウラシル、グアニン、シトシン'},
+        {question: '基本的にRNAは何本の鎖からなるか。', answer: '1本鎖'},
+        {question: 'タンパク質を構成するアミノ酸は、何種類存在するか。', answer: '20種類'},
+        {question: 'アミノ酸を指定する塩基3つの組を何というか。', answer: 'コドン'},
+        {question: 'コドンがどのアミノ酸に対応するかをまとめた表を何というか。', answer: 'コドン表'},
+        {question: '塩基4種類で3つの塩基を組み合わせる際、組み合わせ方は何通りあるか。', answer: '64通り'},
+        {question: '翻訳は、細胞質のどこで行われるか。', answer: 'リボソーム'},
+        {question: 'リボソームにアミノ酸を運んでくるのは何か。', answer: 'tRNA'},
+        {question: 'ハエやユスリカなどの幼虫のだ腺細胞の染色体にはどのような特徴があるか。', answer: '巨大でパフが見える'},
+        {question: 'ハエやユスリカなどの幼虫のだ腺細胞の染色体で部分的にほどけた領域を何というか。', answer: 'パフ'},
+        {question: 'パフでは、どのようなことが起こっているか。', answer: '転写'},
+        {question: '複雑な生命のほとんどは、（）のはたらきによって起こる。', answer: 'タンパク質'},
+        {question: '酵素や、抗体などのタンパク質は全て（）、（）によって作られる。', answer: '転写、翻訳'},
+        {question: '大腸菌は細胞小器官をほとんどもたないが、タンパク質合成をおこなう（）はもつ。', answer: 'リボソーム'},
+        {question: 'アミノ酸500個からなるタンパク質を合成するには、最低（）塩基のmRNAが必要。', answer: '1500'},
+        {question: '基本的にタンパク質は熱に（）。', answer: '弱い'},
+        {question: '基本的にDNAは熱に（）。', answer: '強い'},
+        {question: '染色体とは（）がヒストンに巻きついたもの。', answer: 'DNA'},
+        {question: '染色体とはDNAが（）に巻きついたもの。', answer: 'ヒストン'},
+        {question: 'DNAは（）という化学物質である。', answer: 'デオキシリボ核酸'},
+        {question: '遺伝子とは、DNA上の（）である。', answer: '塩基配列'},
+        {question: '紫外線や放射線によって、DNAの塩基の並び方が変化してしまう現象を何と呼ぶか。', answer: '突然変異'},
+        {question: '突然変異が起こると、翻訳されたタンパク質のアミノ酸配列はどうなるか。', answer: '変化する。'},
+        {question: 'ヒトの細胞で、細胞分裂を抑制している遺伝子が放射線などで破壊されるとどうなるか。', answer: 'がん化する。'},
+        {question: '細胞分裂を行った細胞が特定の形やはたらきをもつようになることを何と呼ぶか。', answer: '分化'},
+        {question: '分化した細胞の中では、必要な遺伝子以外のDNAの領域は全て細胞から排除（）。', answer: 'していない'},
+        {question: '目の細胞と筋肉の細胞ででは、転写、翻訳されている遺伝子の種類が（）。', answer: '異なる'},
+        {question: '目の細胞と筋肉の細胞では、保持する全体の遺伝情報が（）。', answer: '完全に等しい'},
+        {question: '炭水化物（糖）と脂質の構成元素を答えよ。', answer: 'C,H,O'},
+        {question: 'タンパク質の構成元素を答えよ。', answer: 'C,H,O,N,S'},
+        {question: '核酸の構成元素を答えよ。', answer: 'C,H,O,N,P'}
+    ]
+};
+var questions = [];
+var the_answer = '';
+var questions_number = 0;
+var questions_total = 0
+
+function start(text) {
+    if (status != 'choice') {
+        return;
+    }
+    questions = questions_default[text];
+    questions_total = questions_default[text].length;
+    questions_number = 0;
+    status = 'none';
+    answering_area.classList.remove('scroll');
+    answering_area.innerHTML = '';
+    answering_area.style.height = window.innerHeight * questions_total + 'px';
+    for (let i = 0; i < questions_total; i++) {
+        let a_question = document.createElement('div');
+        a_question.classList.add('set');
+        a_question.innerHTML = `
+            <div class="question">${questions[i].question}</div>
+            <div class="answer" contenteditable="true"></div>
+            <div class="circle"></div>
+            <div class="false_sign">
+                <div class="line1"></div>
+                <div class="line2"></div>
+            </div>
+            <div class="correct_answer">${questions[i].answer}</div>
+        `;
+        answering_area.appendChild(a_question);
+    }
+    answer_html = document.querySelectorAll('.answer');
+    question_html = document.querySelectorAll('.question');
+    circle_html = document.querySelectorAll('.circle');
+    false_sign_html = document.querySelectorAll('.false_sign');
+    correct_answer_html = document.querySelectorAll('.correct_answer');
+    select_html.classList.add('hidden');
+    ask();
+}
+
+function ask() {
+    if (questions_number == 0) {
+        answer_html[questions_number].focus();
+        status = 'answering';
+    } else if (questions_number == questions_total) {
+        end();
+        return;
+    } else {
+        setTimeout(() => {
+            answer_html[questions_number].focus();
+            status = 'answering';
+        }, 500);
+    }
+    the_answer = questions[questions_number].answer;
+}
+
+document.addEventListener('keydown', (event) => {
+    if (event.key == 'Enter' && status == 'answering') {
+        event.preventDefault();
+        answer();
+    }
+});
+
+function answer() {
+    status = 'none';
+    let submission = answer_html[questions_number].innerHTML;
+    answer_html[questions_number].blur();
+    if (submission == the_answer) {
+        circle_html[questions_number].classList.add('visible');
+        questions_number++;
+        setTimeout(() => {
+            next();
+            ask();
+        }, 500);
+    } else {
+        false_sign_html[questions_number].classList.add('visible');
+        correct_answer_html[questions_number].classList.add('visible');
+        questions_number++;
+        setTimeout(() => {
+            next();
+            ask();
+        }, 2500);
+    }
+}
+
+function next() {
+    answering_area.classList.remove('scroll');
+    if (questions_number > 1) {
+        document.body.scrollBy(0, window.innerHeight);
+    }
+    setTimeout(() => {
+        answering_area.classList.add('scroll');
+    }, 1)
+}
+
+function end() {
+    status = 'choice';
+    select_html.classList.remove('hidden');
+}
+
+</script>
+</body>
+</html>
